@@ -24,6 +24,20 @@ struct s3_location {
     bucket: String,
     key: String,
 }
+
+impl Into<String> for s3_location {
+    fn into(self) -> String {
+        format!("s3://{}/{}", self.bucket, self.key)
+    }
+}
+
+impl From<String> for s3_location {
+    fn from(url: String) -> Self {
+        parse_s3_url(&url).unwrap()
+    }
+    
+}
+
 fn parse_s3_url(url: &str) -> Result<s3_location, String> {
     let err = "Invalid s3 url".to_string();
     if !url.starts_with("s3://") {
