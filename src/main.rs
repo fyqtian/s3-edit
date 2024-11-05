@@ -1,6 +1,7 @@
 use clap::{Arg, Command, Parser};
 use std::error::Error;
 mod helper;
+mod s3wrapper;
 
 #[tokio::main]
 
@@ -16,13 +17,20 @@ async fn run() {
         println!("bucket: {}, key: {}", s3_location.bucket, s3_location.key);
     } else {
         println!("Invalid s3 url");
+        return;
     }
-    let config = helper::aws_config().await;
+    let client = s3wrapper::s3_wrapper::new().await;
 }
 #[derive(Debug)]
 struct s3_location {
     bucket: String,
     key: String,
+}
+
+impl s3_location {
+    fn new(bucket: String, key: String) -> Self {
+        s3_location { bucket, key }
+    }
 }
 
 impl Into<String> for s3_location {
@@ -35,7 +43,6 @@ impl From<String> for s3_location {
     fn from(url: String) -> Self {
         parse_s3_url(&url).unwrap()
     }
-    
 }
 
 fn parse_s3_url(url: &str) -> Result<s3_location, String> {
