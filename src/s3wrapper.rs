@@ -35,8 +35,8 @@ impl S3Wrapper {
         let mut object = self.get_object(url).await?;
         let mut store: Vec<u8> = vec![];
         while let Some(chunk) = object.body.try_next().await? {
-            println!("got chunk");
-            println!("{:?}", chunk);
+            let tmp: Vec<u8> = chunk.clone().into();
+            store.extend(tmp);
         }
         Ok(store)
     }

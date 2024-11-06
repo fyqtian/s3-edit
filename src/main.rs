@@ -23,6 +23,8 @@ async fn run() {
         let m = rs.err().unwrap();
         helper::exit_with_error("download object failed");
     }
+    let body = rs.unwrap();
+    println!("{}", String::from_utf8(body).unwrap());
 }
 
 fn init_command() -> Command {
