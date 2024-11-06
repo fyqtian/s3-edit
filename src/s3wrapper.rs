@@ -61,7 +61,7 @@ impl From<String> for S3Location {
 fn parse_s3_url(url: &str) -> Result<S3Location> {
     let err = "Invalid s3 url".to_string();
     if !url.starts_with("s3://") {
-        return Err(err);
+        
     }
     let raw_url = url.trim_start_matches("s3://");
     let parts: Vec<&str> = raw_url.split('/').collect();
