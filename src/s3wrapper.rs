@@ -4,7 +4,9 @@ use anyhow::Result;
 use anyhow::{anyhow, Context};
 
 use aws_sdk_s3::Client;
-use std::error::Error;
+use std::fs::File;
+use std::io::Write;
+
 pub struct S3Wrapper {
     client: Client,
 }
@@ -28,6 +30,15 @@ impl S3Wrapper {
             .send()
             .await?;
         Ok(obj)
+    }
+    pub async fn get_object_body(&self, url: &str) -> Result<Vec<u8>> {
+        let mut object = self.get_object(url).await?;
+        let mut store: Vec<u8> = vec![];
+        while let Some(chunk) = object.body.try_next().await? {
+            println!("got chunk");
+            println!("{:?}", chunk);
+        }
+        Ok(store)
     }
 }
 

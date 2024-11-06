@@ -17,8 +17,10 @@ async fn run() {
     let url = matches.get_one::<String>("s3-url").unwrap();
 
     let client = s3wrapper::S3Wrapper::new().await;
-    let rs = client.get_object(url).await;
+
+    let rs = client.get_object_body(url).await;
     if rs.is_err() {
+        let m = rs.err().unwrap();
         helper::exit_with_error("download object failed");
     }
 }
