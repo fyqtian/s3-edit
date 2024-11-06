@@ -8,3 +8,4 @@ aws-config = { version = "1.5.9", features = ["behavior-version-latest"] }
 clap = { version = "4.5.20", features = ["derive", "cargo"] }
 tokio = { version = "1", features = ["full"] }
 aws-sdk-s3 = { version = "1.4.0", features = ["rt-tokio"] }
+anyhow = "1.0.93"

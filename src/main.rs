@@ -10,56 +10,19 @@ async fn main() {
 }
 
 async fn run() {
+
     let cmd = init_command();
     let matches = cmd.get_matches();
+
     let url = matches.get_one::<String>("s3-url").unwrap();
-    if let Ok(s3_location) = parse_s3_url(&url) {
-        println!("bucket: {}, key: {}", s3_location.bucket, s3_location.key);
-    } else {
-        println!("Invalid s3 url");
-        return;
-    }
-    let client = s3wrapper::s3_wrapper::new().await;
-}
-#[derive(Debug)]
-struct s3_location {
-    bucket: String,
-    key: String,
-}
 
-impl s3_location {
-    fn new(bucket: String, key: String) -> Self {
-        s3_location { bucket, key }
+    let client = s3wrapper::S3Wrapper::new().await;
+    let rs = client.get_object(url).await;
+    if rs.is_err() {
+        helper::exit_with_error("download object failed");
     }
 }
 
-impl Into<String> for s3_location {
-    fn into(self) -> String {
-        format!("s3://{}/{}", self.bucket, self.key)
-    }
-}
-
-impl From<String> for s3_location {
-    fn from(url: String) -> Self {
-        parse_s3_url(&url).unwrap()
-    }
-}
-
-fn parse_s3_url(url: &str) -> Result<s3_location, String> {
-    let err = "Invalid s3 url".to_string();
-    if !url.starts_with("s3://") {
-        return Err(err);
-    }
-    let raw_url = url.trim_start_matches("s3://");
-    let parts: Vec<&str> = raw_url.split('/').collect();
-    if parts.len() != 2 {
-        return Err(err);
-    }
-    Ok(s3_location {
-        bucket: parts[0].to_string(),
-        key: parts[1].to_string(),
-    })
-}
 
 fn init_command() -> Command {
     let cmd = Command::new("s3-edit")
