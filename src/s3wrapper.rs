@@ -1,7 +1,7 @@
 // https://github.com/awsdocs/aws-doc-sdk-examples
 use crate::helper;
-use anyhow::Context;
 use anyhow::Result;
+use anyhow::{anyhow, Context};
 
 use aws_sdk_s3::Client;
 use std::error::Error;
@@ -59,14 +59,15 @@ impl From<String> for S3Location {
 }
 
 fn parse_s3_url(url: &str) -> Result<S3Location> {
-    let err = "Invalid s3 url".to_string();
     if !url.starts_with("s3://") {
-        
+        return Err(anyhow!("Invalid s3 url, must start with s3://"));
     }
+
     let raw_url = url.trim_start_matches("s3://");
     let parts: Vec<&str> = raw_url.split('/').collect();
+
     if parts.len() != 2 {
-        return Err(err);
+        return Err(anyhow!("Invalid s3 url, must have exactly full path"));
     }
     Ok(S3Location {
         bucket: parts[0].to_string(),

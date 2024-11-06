@@ -1,5 +1,6 @@
 use clap::{Arg, Command, Parser};
 use std::error::Error;
+mod error;
 mod helper;
 mod s3wrapper;
 
@@ -10,7 +11,6 @@ async fn main() {
 }
 
 async fn run() {
-
     let cmd = init_command();
     let matches = cmd.get_matches();
 
@@ -22,7 +22,6 @@ async fn run() {
         helper::exit_with_error("download object failed");
     }
 }
-
 
 fn init_command() -> Command {
     let cmd = Command::new("s3-edit")
