@@ -10,3 +10,9 @@ tokio = { version = "1", features = ["full"] }
 aws-sdk-s3 = { version = "1.4.0", features = ["rt-tokio"] }
 anyhow = "1.0.93"
 tempfile = "3.14.0"
+
+
+[profile.dev]
+allow-dead-code = true
+allow-unused-vars = true
+

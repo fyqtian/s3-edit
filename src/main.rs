@@ -1,47 +1,74 @@
-use clap::{arg, command, Arg, Command, Parser};
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(dead_code)]
+use crate::s3wrapper::S3Location;
+use anyhow::anyhow;
+use clap::{arg, Arg, Command};
 use std::error::Error;
-use std::fs;
-use std::fs::File;
-use std::io::{Read, Seek, SeekFrom};
-use std::process::Output;
+use std::process;
+use tempfile::NamedTempFile;
 
-mod error;
 mod helper;
 mod s3wrapper;
 
 #[tokio::main]
-
 async fn main() {
-    run().await
-}
-
-async fn run() {
-    let cmd = init_command();
-    let matches = cmd.get_matches();
-
-    let url = matches.get_one::<String>("s3-url").unwrap();
-
-    let client = s3wrapper::S3Wrapper::new().await;
-
-    let rs = client.get_object_to_temp_file(url).await;
+    let s3edit = S3Edit::new().await;
+    let rs = s3edit.run().await;
     if rs.is_err() {
-        let m = rs.err().unwrap();
-        helper::exit_with_error("download object failed");
-    }
-    let mut temp_file = rs.unwrap();
-    let args = vec![temp_file.path().to_str().unwrap(), "test"];
-    let output = helper::exec_cmd("cp", args).await;
-    if output.is_err() {
-        let m = output.err().unwrap();
-        helper::exit_with_error("exec cmd failed");
+        eprintln!("error:{}", rs.unwrap_err());
     }
 }
 
-fn init_command() -> Command {
-    let cmd = Command::new("s3-edit")
-        .author("vanessa")
-        .version("0.1.0")
-        .about("A tool to edit s3 object")
-        .arg(Arg::new("s3-url").short('u').long("s3-url").required(true));
-    cmd
+struct S3Edit {
+    client: s3wrapper::S3Wrapper,
+    s3location: Option<S3Location>,
+    editor: Option<String>,
+}
+
+impl S3Edit {
+    async fn new() -> Self {
+        let client = s3wrapper::S3Wrapper::new().await;
+        S3Edit {
+            client: client,
+            s3location: None,
+            editor: None,
+        }
+    }
+    fn init_command(&self) -> Command {
+        let cmd = Command::new("s3-edit")
+            .author("vanessa")
+            .version("0.1.0")
+            .about("A tool to edit s3 object")
+            .arg(Arg::new("s3-url").short('u').long("s3-url").required(true))
+            .arg(
+                Arg::new("editor")
+                    .short('e')
+                    .long("editor")
+                    .default_value("vi"),
+            );
+        cmd
+    }
+    async fn run(&self) -> anyhow::Result<()> {
+        let matches = self.init_command().get_matches();
+
+        let url = matches
+            .get_one::<String>("s3-url")
+            .ok_or(anyhow!("s3-url is required"))?;
+        let editor = matches.get_one::<String>("editor").unwrap();
+        println!("url:{},editor:{}", url, editor);
+        if !helper::check_command_exist(editor).await {
+            return Err(anyhow!("editor {} not found", editor));
+        }
+        let temp_file = self.download(&url).await?;
+        let rs =
+            helper::normal_exec_cmd("sh", vec!["-c", editor, temp_file.path().to_str().unwrap()]);
+
+        Ok(())
+    }
+
+    async fn download(&self, url: &str) -> anyhow::Result<NamedTempFile> {
+        let rs = self.client.get_object_to_temp_file(url).await?;
+        Ok(rs)
+    }
 }
