@@ -6,6 +6,8 @@ use anyhow::{anyhow, Context};
 use aws_sdk_s3::Client;
 use std::fs::File;
 use std::io::Write;
+use std::path::{Path, PathBuf};
+use tempfile::NamedTempFile;
 
 pub struct S3Wrapper {
     client: Client,
@@ -47,10 +49,11 @@ impl S3Wrapper {
         }
         Ok(())
     }
-
-    pub async fn get_object_to_temp_file(&self, url: &str) -> Result<File> {
+    pub async fn get_object_to_temp_file(&self, url: &str) -> Result<(NamedTempFile)> {
         let mut temp_file = helper::create_temp_file().await?;
-        self.get_object_to_file(url, &mut temp_file).await?;
+        let f = self
+            .get_object_to_file(url, temp_file.as_file_mut())
+            .await?;
         Ok(temp_file)
     }
 }

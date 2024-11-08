@@ -1,8 +1,9 @@
-use clap::{Arg, Command, Parser};
+use clap::{arg, command, Arg, Command, Parser};
 use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
+use std::process::Output;
 
 mod error;
 mod helper;
@@ -28,13 +29,12 @@ async fn run() {
         helper::exit_with_error("download object failed");
     }
     let mut temp_file = rs.unwrap();
-    println!("downloaded to {:?}", temp_file);
-    println!("!23");
-    let mut content = String::new();
-    temp_file.seek(SeekFrom::Start(0));
-    println!("{}", temp_file.path().display());
-    temp_file.read_to_string(&mut content);
-    println!("content: {}", content);
+    let args = vec![temp_file.path().to_str().unwrap(), "test"];
+    let output = helper::exec_cmd("cp", args).await;
+    if output.is_err() {
+        let m = output.err().unwrap();
+        helper::exit_with_error("exec cmd failed");
+    }
 }
 
 fn init_command() -> Command {
