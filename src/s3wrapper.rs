@@ -40,6 +40,19 @@ impl S3Wrapper {
         }
         Ok(store)
     }
+    pub async fn get_object_to_file(&self, url: &str, file: &mut File) -> Result<()> {
+        let mut object = self.get_object(url).await?;
+        while let Some(chunk) = object.body.try_next().await? {
+            file.write_all(&chunk).context("failed to write to file")?;
+        }
+        Ok(())
+    }
+
+    pub async fn get_object_to_temp_file(&self, url: &str) -> Result<File> {
+        let mut temp_file = helper::create_temp_file().await?;
+        self.get_object_to_file(url, &mut temp_file).await?;
+        Ok(temp_file)
+    }
 }
 
 #[derive(Debug)]

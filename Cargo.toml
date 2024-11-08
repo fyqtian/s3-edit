@@ -9,3 +9,4 @@ clap = { version = "4.5.20", features = ["derive", "cargo"] }
 tokio = { version = "1", features = ["full"] }
 aws-sdk-s3 = { version = "1.4.0", features = ["rt-tokio"] }
 anyhow = "1.0.93"
+tempfile = "3.14.0"
