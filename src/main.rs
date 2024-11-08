@@ -61,9 +61,10 @@ impl S3Edit {
             return Err(anyhow!("editor {} not found", editor));
         }
         let temp_file = self.download(&url).await?;
-        let rs =
-            helper::normal_exec_cmd("sh", vec!["-c", editor, temp_file.path().to_str().unwrap()]);
+        // let rs = helper::normal_exec_cmd2("sh", vec!["-c", editor, temp_file.path().to_str().unwrap()]);
+        let rs = helper::normal_exec_cmd2("sh", temp_file.path().to_str().unwrap());
 
+        println!("rs:{:?}", temp_file);
         Ok(())
     }
 
