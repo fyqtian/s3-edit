@@ -14,6 +14,7 @@ mod s3wrapper;
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
     let s3edit = S3Edit::new().await;
     let rs = s3edit.run().await;
     if rs.is_err() {

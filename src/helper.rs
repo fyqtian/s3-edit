@@ -39,6 +39,9 @@ pub async fn check_command_exist(cmd: &str) -> bool {
 }
 
 pub fn normal_exec_cmd<T: AsRef<OsStr>>(cmd: T, args: Vec<T>) -> io::Result<ExitStatus> {
-    let r = Command::new(cmd).args(args).status()?;
+    let mut exec_cmd = Command::new(cmd);
+    exec_cmd.args(args);
+    debug!("exec_cmd: {:?}", exec_cmd);
+    let r = exec_cmd.status()?;
     Ok(r)
 }
