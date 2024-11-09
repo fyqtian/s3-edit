@@ -5,8 +5,11 @@ use std::env::args;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
 use std::io;
+use std::io::Read;
+use std::path::Path;
 use std::process::{Command, ExitCode, ExitStatus, Output};
 use tempfile::NamedTempFile;
+use tokio::io::AsyncReadExt;
 
 pub async fn aws_config() -> aws_config::SdkConfig {
     let config = aws_config::from_env().load().await;
@@ -61,4 +64,11 @@ pub fn answer_confirm(msg: &str, exit: bool) -> bool {
         exit_with_error("ctrl-c exit");
     }
     ans.unwrap()
+}
+
+pub async fn read_file<T: AsRef<Path>>(path: T) -> io::Result<Vec<u8>> {
+    let mut file = tokio::fs::File::open(path).await?;
+    let mut buffer: Vec<u8> = Vec::new();
+    file.read_to_end(&mut buffer).await?;
+    Ok(buffer)
 }

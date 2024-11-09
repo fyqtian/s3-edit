@@ -6,7 +6,7 @@ use anyhow::{anyhow, Context};
 
 use aws_sdk_s3::Client;
 use std::fs::File;
-use std::io::Write;
+use std::io::{Read, Write};
 use tempfile::NamedTempFile;
 
 pub struct S3Wrapper {
@@ -22,7 +22,7 @@ impl S3Wrapper {
         &self,
         url: &str,
     ) -> Result<aws_sdk_s3::operation::get_object::GetObjectOutput> {
-        let location = S3Location::new_from_url(url)?;
+        let location = parse_s3_url(url)?;
 
         let obj = self
             .client
@@ -56,6 +56,32 @@ impl S3Wrapper {
             .await?;
         Ok(temp_file)
     }
+    pub async fn put_object_from_file(&self, url: &str, path: &str) -> Result<()> {
+        let location = parse_s3_url(url)?;
+        let buffer = helper::read_file(path).await?;
+        self.client
+            .put_object()
+            .bucket(location.bucket)
+            .key(location.key)
+            .body(buffer.into())
+            .send()
+            .await?;
+        Ok(())
+    }
+}
+
+fn parse_s3_url(url: &str) -> Result<S3Location> {
+    if !url.starts_with("s3://") {
+        return Err(anyhow!("Invalid s3 url, must start with s3://"));
+    }
+
+    let raw_url = url.trim_start_matches("s3://");
+    let parts: Vec<&str> = raw_url.split('/').collect();
+
+    if parts.len() != 2 {
+        return Err(anyhow!("Invalid s3 url, must have exactly full path"));
+    }
+    Ok(S3Location::new(parts[0].to_string(), parts[1].to_string()))
 }
 
 #[derive(Debug)]
@@ -83,21 +109,4 @@ impl From<String> for S3Location {
     fn from(url: String) -> Self {
         parse_s3_url(&url).unwrap()
     }
-}
-
-fn parse_s3_url(url: &str) -> Result<S3Location> {
-    if !url.starts_with("s3://") {
-        return Err(anyhow!("Invalid s3 url, must start with s3://"));
-    }
-
-    let raw_url = url.trim_start_matches("s3://");
-    let parts: Vec<&str> = raw_url.split('/').collect();
-
-    if parts.len() != 2 {
-        return Err(anyhow!("Invalid s3 url, must have exactly full path"));
-    }
-    Ok(S3Location {
-        bucket: parts[0].to_string(),
-        key: parts[1].to_string(),
-    })
 }

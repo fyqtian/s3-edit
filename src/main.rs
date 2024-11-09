@@ -1,8 +1,8 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 #![allow(dead_code)]
-use crate::s3wrapper::S3Location;
 use anyhow::anyhow;
+use aws_sdk_s3::types::S3Location;
 use clap::{arg, Arg, Command};
 use log::{debug, error, warn};
 use std::error::Error;
@@ -95,7 +95,7 @@ impl S3Edit {
                 }
             }
         }
-
+        self.client.put_object_from_file(url, &path_edited).await?;
         Ok(())
     }
 
