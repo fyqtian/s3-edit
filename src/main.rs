@@ -4,6 +4,7 @@
 use crate::s3wrapper::S3Location;
 use anyhow::anyhow;
 use clap::{arg, Arg, Command};
+use log::{debug, error, warn};
 use std::error::Error;
 use std::process;
 use tempfile::NamedTempFile;
@@ -16,7 +17,7 @@ async fn main() {
     let s3edit = S3Edit::new().await;
     let rs = s3edit.run().await;
     if rs.is_err() {
-        eprintln!("error:{}", rs.unwrap_err());
+        error!("error:{}", rs.unwrap_err());
     }
 }
 
@@ -56,15 +57,15 @@ impl S3Edit {
             .get_one::<String>("s3-url")
             .ok_or(anyhow!("s3-url is required"))?;
         let editor = matches.get_one::<String>("editor").unwrap();
-        println!("url:{},editor:{}", url, editor);
+        debug!("url:{} ,editor:{}", url, editor);
         if !helper::check_command_exist(editor).await {
             return Err(anyhow!("editor {} not found", editor));
         }
-        let temp_file = self.download(&url).await?;
-        // let rs = helper::normal_exec_cmd2("sh", vec!["-c", editor, temp_file.path().to_str().unwrap()]);
-        let rs = helper::normal_exec_cmd2("sh", temp_file.path().to_str().unwrap());
 
-        println!("rs:{:?}", temp_file);
+        let temp_file = self.download(&url).await?;
+        let path = temp_file.path().to_str().unwrap();
+        let rs = helper::normal_exec_cmd(editor.as_str(), vec![path]);
+        debug!("rs:{:?}", temp_file);
         Ok(())
     }
 

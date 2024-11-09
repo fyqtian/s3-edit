@@ -1,4 +1,5 @@
 use clap::arg;
+use log::debug;
 use std::env::args;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
@@ -37,19 +38,7 @@ pub async fn check_command_exist(cmd: &str) -> bool {
     output.unwrap().status.success()
 }
 
-pub fn normal_exec_cmd<T: AsRef<OsStr>>(cmd: T, args: Vec<T>) -> io::Result<Output> {
-    for i in args.iter() {
-        println!("arg:{}", i.as_ref().to_str().unwrap());
-    }
-    let r = Command::new("sh").args(args).output()?;
+pub fn normal_exec_cmd<T: AsRef<OsStr>>(cmd: T, args: Vec<T>) -> io::Result<ExitStatus> {
+    let r = Command::new(cmd).args(args).status()?;
     Ok(r)
-}
-
-pub fn normal_exec_cmd2<T: AsRef<OsStr>>(cmd: T, path: &str) {
-    // let r = Command::new("sh").args(args).status();
-    Command::new("sh")
-        .arg("-c")
-        .arg(format!("{} {}", "vi", path))
-        .status();
-    ()
 }
