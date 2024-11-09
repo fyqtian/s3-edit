@@ -12,6 +12,7 @@ anyhow = "1.0.93"
 tempfile = "3.14.0"
 log = "0.4.22"
 env_logger = "0.11.5"
+inquire = "0.7.5"
 
 
 [profile.dev]

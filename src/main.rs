@@ -65,8 +65,37 @@ impl S3Edit {
 
         let temp_file = self.download(&url).await?;
         let path = temp_file.path().to_str().unwrap();
-        let rs = helper::normal_exec_cmd(editor.as_str(), vec![path]);
-        debug!("rs:{:?}", temp_file);
+        let path_edited = format!("{}.edited", path);
+        let cp_rs = helper::exec_cmd_sucess("cp", vec![path, path_edited.as_str()]).await;
+        if !cp_rs {
+            return Err(anyhow!("copy failed"));
+        }
+        let git_exist = helper::check_command_exist("git").await;
+        loop {
+            let rs = helper::normal_exec_cmd(editor.as_str(), vec![path]);
+            let ans = helper::answer_confirm("Do you finish editing?", true);
+            if !ans {
+                continue;
+            }
+            if git_exist {
+                let git_diff = helper::exec_cmd(
+                    "git",
+                    vec![
+                        "diff",
+                        "--ignore-space-change",
+                        "--color",
+                        path,
+                        path_edited.as_str(),
+                    ],
+                )
+                .await?;
+                println!("git diff:{}", String::from_utf8(git_diff.stdout)?);
+                if let ans = helper::answer_confirm("Confirm your editing", true) {
+                    break;
+                }
+            }
+        }
+
         Ok(())
     }
 
