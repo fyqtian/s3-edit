@@ -1,0 +1,21 @@
+[package]
+name = "s3-edit"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aws-config = { version = "1.5.9", features = ["behavior-version-latest"] }
+clap = { version = "4.5.20", features = ["derive", "cargo"] }
+tokio = { version = "1", features = ["full"] }
+aws-sdk-s3 = { version = "1.4.0", features = ["rt-tokio"] }
+anyhow = "1.0.93"
+tempfile = "3.14.0"
+log = "0.4.22"
+env_logger = "0.11.5"
+inquire = "0.7.5"
+
+
+[profile.dev]
+allow-dead-code = true
+allow-unused-vars = true
+
