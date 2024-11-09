@@ -79,7 +79,9 @@ fn parse_s3_url(url: &str) -> Result<S3Location> {
     let parts: Vec<&str> = raw_url.split('/').collect();
 
     if parts.len() != 2 {
-        return Err(anyhow!("Invalid s3 url, must have exactly full path"));
+        return Err(anyhow!(
+            "Invalid s3 url, must have exactly full path example s3://bucket/key"
+        ));
     }
     Ok(S3Location::new(parts[0].to_string(), parts[1].to_string()))
 }

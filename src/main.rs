@@ -4,6 +4,7 @@
 use anyhow::anyhow;
 use aws_sdk_s3::types::S3Location;
 use clap::{arg, Arg, Command};
+use inquire::{required, Confirm};
 use log::{debug, error, warn};
 use std::error::Error;
 use std::process;
@@ -54,9 +55,7 @@ impl S3Edit {
     async fn run(&self) -> anyhow::Result<()> {
         let matches = self.init_command().get_matches();
 
-        let url = matches
-            .get_one::<String>("s3-url")
-            .ok_or(anyhow!("s3-url is required"))?;
+        let url = matches.get_one::<String>("s3-url").unwrap();
         let editor = matches.get_one::<String>("editor").unwrap();
         debug!("url:{} ,editor:{}", url, editor);
         if !helper::check_command_exist(editor).await {
@@ -90,7 +89,8 @@ impl S3Edit {
                 )
                 .await?;
                 println!("git diff:{}", String::from_utf8(git_diff.stdout)?);
-                if let ans = helper::answer_confirm("Confirm your editing", true) {
+                let ans = helper::answer_confirm("Confirm your edits and commit?", true);
+                if ans {
                     break;
                 }
             }
