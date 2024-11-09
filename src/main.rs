@@ -72,7 +72,7 @@ impl S3Edit {
         }
         let git_exist = helper::check_command_exist("git").await;
         loop {
-            let rs = helper::normal_exec_cmd(editor.as_str(), vec![path]);
+            let rs = helper::normal_exec_cmd(editor.as_str(), vec![path_edited.as_str()]);
             let ans = helper::answer_confirm("Do you finish editing?", true);
             if !ans {
                 continue;
