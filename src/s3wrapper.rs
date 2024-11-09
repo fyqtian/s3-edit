@@ -30,7 +30,8 @@ impl S3Wrapper {
             .bucket(location.bucket)
             .key(location.key)
             .send()
-            .await?;
+            .await
+            .context("failed to get object")?;
         Ok(obj)
     }
     pub async fn get_object_body(&self, url: &str) -> Result<Vec<u8>> {
