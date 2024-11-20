@@ -1,3 +1,4 @@
+use aws_types::region::Region;
 use clap::arg;
 use inquire::Confirm;
 use log::debug;
@@ -10,9 +11,8 @@ use std::path::Path;
 use std::process::{Command, ExitCode, ExitStatus, Output};
 use tempfile::NamedTempFile;
 use tokio::io::AsyncReadExt;
-use aws_types::region::Region;
 
-pub async fn aws_config(region: Option<&str>) -> aws_config::SdkConfig {
+pub async fn aws_config(region: Option<&String>) -> aws_config::SdkConfig {
     let mut config = aws_config::from_env();
     if let Some(region) = region {
         config = config.region(Region::new(region.to_string()));

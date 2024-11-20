@@ -13,8 +13,8 @@ pub struct S3Wrapper {
     client: Client,
 }
 impl S3Wrapper {
-    pub async fn new() -> Self {
-        let config = helper::aws_config(None).await;
+    pub async fn new(region: Option<&String>) -> Self {
+        let config = helper::aws_config(region).await;
         let client = Client::new(&config);
         S3Wrapper { client }
     }
@@ -31,7 +31,7 @@ impl S3Wrapper {
             .key(location.key)
             .send()
             .await?;
-            // .context("failed to get object")?;
+        // .context("failed to get object")?;
         Ok(obj)
     }
     pub async fn get_object_body(&self, url: &str) -> Result<Vec<u8>> {
