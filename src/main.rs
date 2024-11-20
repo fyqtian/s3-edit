@@ -8,6 +8,7 @@ use inquire::{required, Confirm};
 use log::{debug, error, warn};
 use std::error::Error;
 use std::process;
+use clap::builder::Str;
 use tempfile::NamedTempFile;
 
 mod helper;
@@ -49,7 +50,8 @@ impl S3Edit {
                     .short('e')
                     .long("editor")
                     .default_value("vi"),
-            );
+            )
+            .arg(Arg::new("region").short('r').long("region"));
         cmd
     }
     async fn run(&self) -> anyhow::Result<()> {
@@ -57,6 +59,7 @@ impl S3Edit {
 
         let url = matches.get_one::<String>("s3-url").unwrap();
         let editor = matches.get_one::<String>("editor").unwrap();
+        let region = matches.get_one::<String>("region");
         debug!("url:{} ,editor:{}", url, editor);
         if !helper::check_command_exist(editor).await {
             return Err(anyhow!("editor {} not found", editor));

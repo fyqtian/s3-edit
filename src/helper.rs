@@ -10,9 +10,18 @@ use std::path::Path;
 use std::process::{Command, ExitCode, ExitStatus, Output};
 use tempfile::NamedTempFile;
 use tokio::io::AsyncReadExt;
+use aws_types::region::Region;
 
-pub async fn aws_config() -> aws_config::SdkConfig {
-    let config = aws_config::from_env().load().await;
+pub async fn aws_config(region: Option<&str>) -> aws_config::SdkConfig {
+    let mut config = aws_config::from_env();
+    if let Some(region) = region {
+        config = config.region(Region::new(region.to_string()));
+    }
+    config.load().await
+}
+
+pub async fn aws_config_region(region: &'static str) -> aws_config::SdkConfig {
+    let config = aws_config::from_env().region(region).load().await;
     config
 }
 
