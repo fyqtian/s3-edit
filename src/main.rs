@@ -3,11 +3,9 @@
 #![allow(dead_code)]
 use anyhow::anyhow;
 use aws_sdk_s3::types::S3Location;
-use clap::builder::Str;
 use clap::{arg, Arg, Command};
 use inquire::{required, Confirm};
 use log::{debug, error, warn};
-use std::error::Error;
 use std::process;
 use tempfile::NamedTempFile;
 
