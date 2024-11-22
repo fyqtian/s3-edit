@@ -17,8 +17,7 @@ mod s3wrapper;
 #[tokio::main]
 async fn main() {
     env_logger::init();
-    let cmd = init_command();
-    let s3edit = S3Edit::new(cmd).await;
+    let s3edit = S3Edit::new().await;
     let rs = s3edit.run().await;
     if rs.is_err() {
         error!("error:{}", rs.unwrap_err());
@@ -48,9 +47,9 @@ fn init_command() -> Command {
 }
 
 impl S3Edit {
-    async fn new(cmd: Command) -> Self {
-        let matches = cmd.get_matches();
-        let region = matches.get_one::<String>("region");
+    async fn new() -> Self {
+        let matches = init_command().get_matches();
+        let region = matches.get_one::<String>("region").map(|x| x.clone());
         let editor = matches.get_one::<String>("editor").unwrap().clone();
         let url = matches.get_one::<String>("s3-url").unwrap().clone();
         let client = s3wrapper::S3Wrapper::new(region).await;

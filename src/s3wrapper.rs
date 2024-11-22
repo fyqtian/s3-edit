@@ -13,7 +13,7 @@ pub struct S3Wrapper {
     client: Client,
 }
 impl S3Wrapper {
-    pub async fn new(region: Option<&String>) -> Self {
+    pub async fn new(region: Option<String>) -> Self {
         let config = helper::aws_config(region).await;
         let client = Client::new(&config);
         S3Wrapper { client }
