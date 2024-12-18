@@ -9,6 +9,7 @@ use std::io;
 use std::io::Read;
 use std::path::Path;
 use std::process::{Command, ExitCode, ExitStatus, Output};
+use reqwest::Proxy;
 use tempfile::NamedTempFile;
 use tokio::io::AsyncReadExt;
 
@@ -17,6 +18,11 @@ pub async fn aws_config(region: Option<String>) -> aws_config::SdkConfig {
     if let Some(region) = region {
         config = config.region(Region::new(region));
     }
+    let proxy = Proxy::https("http://ecs").unwrap();
+    let http_client = reqwest::Client::builder()
+        .proxy(proxy)
+        .build().unwrap();
+    config.http_client(http_client);
     config.load().await
 }
 
