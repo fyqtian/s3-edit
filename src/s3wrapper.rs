@@ -4,7 +4,6 @@ use crate::helper;
 use anyhow::Result;
 use anyhow::{anyhow, Context};
 use aws_sdk_s3::Client;
-use reqwest::Proxy;
 use std::fs::File;
 use std::io::{Read, Write};
 use tempfile::NamedTempFile;
