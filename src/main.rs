@@ -18,7 +18,7 @@ async fn main() {
     let s3edit = S3Edit::new().await;
     let rs = s3edit.run().await;
     if rs.is_err() {
-        error!("error:{}", rs.unwrap_err());
+        rs.unwrap()
     }
 }
 

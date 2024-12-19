@@ -1,23 +1,35 @@
 use aws_types::region::Region;
 use clap::arg;
+use hyper_proxy::{Intercept, Proxy, ProxyConnector};
 use inquire::Confirm;
 use log::debug;
-use std::env::args;
 use std::ffi::OsStr;
 use std::fmt::{Debug, Display};
-use std::io;
+use std::{env, io};
 use std::io::Read;
 use std::path::Path;
 use std::process::{Command, ExitCode, ExitStatus, Output};
 use tempfile::NamedTempFile;
 use tokio::io::AsyncReadExt;
 
+use aws_smithy_runtime::client::http::hyper_014::HyperClientBuilder;
+use hyper::client::HttpConnector;
+
 pub async fn aws_config(region: Option<String>) -> aws_config::SdkConfig {
     let mut config = aws_config::from_env();
     if let Some(region) = region {
         config = config.region(Region::new(region));
     }
-    config.load().await
+    if env::var("http_proxy").is_ok() || env::var("https_proxy").is_ok() {
+        let url= env::var("http_proxy").unwrap_or(env::var("https_proxy").unwrap()).parse().unwrap();
+        let proxy = Proxy::new(Intercept::All, url);
+        let connector = HttpConnector::new();
+        let proxy_connector = ProxyConnector::from_proxy(connector, proxy).unwrap();
+        let http_client = HyperClientBuilder::new().build(proxy_connector);
+        config = config.http_client(http_client)
+    }
+
+   config.load().await
 }
 
 pub async fn aws_config_region(region: &'static str) -> aws_config::SdkConfig {

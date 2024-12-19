@@ -3,7 +3,6 @@
 use crate::helper;
 use anyhow::Result;
 use anyhow::{anyhow, Context};
-
 use aws_sdk_s3::Client;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -18,12 +17,12 @@ impl S3Wrapper {
         let client = Client::new(&config);
         S3Wrapper { client }
     }
+
     pub async fn get_object(
         &self,
         url: &str,
     ) -> Result<aws_sdk_s3::operation::get_object::GetObjectOutput> {
         let location = parse_s3_url(url)?;
-
         let obj = self
             .client
             .get_object()
@@ -31,7 +30,6 @@ impl S3Wrapper {
             .key(location.key)
             .send()
             .await?;
-        // .context("failed to get object")?;
         Ok(obj)
     }
     pub async fn get_object_body(&self, url: &str) -> Result<Vec<u8>> {
